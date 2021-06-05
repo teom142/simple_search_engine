@@ -1,3 +1,4 @@
+#pragma warning(disable:4996)
 #include "simple_search_engine.h"
 
 int read_file(char* fname)
@@ -14,7 +15,6 @@ int read_file(char* fname)
 		exit(1);
 	}
 	while (fscanf(ifp, "%c", &c) == 1) {// (key data)를 읽어 해시테이블에 삽입
-		//printf("%s\n", key);
 		c = tolower(c);
 		if (is_alpha(c))
 			ft_strchar(key, c);
@@ -64,51 +64,51 @@ int is_alpha(char c)
 
 void hash_insert(char* key, char* fname, int i)
 {
+	int comp = 0;
 	list_ptr new_list = (list_ptr)malloc(sizeof(list));
 	int idx = hash(key);
-	int j = 0;
-	list_ptr curr = hash_table[idx];
-	int over = 1;
+	list_ptr curr = &hash_table[idx];
 	strcpy(new_list->item.key, key);
 	strcpy(new_list->item.doc, fname);
 	new_list->item.word_idx = i;
 	new_list->link = NULL;
-	if (!curr)
-	{
-		hash_table[idx] = new_list;
-		word_count++;
-		return;
-	}
+	new_list->next = NULL;
+	int depth = 0;
+	list_ptr tmp = NULL;
 
-	if (ft_strcmp(curr->item.key, key) == 0)
-	{
-		comp_count++;
-		while (curr->link)
-			curr = curr->link;
-		curr->link = new_list;
-		return;
-	}
-	else
-	{
-		while (hash_table[idx + ++j] && ft_strcmp(hash_table[idx + j]->item.key, key) != 0) comp_count++;
-		if (!hash_table[idx + j])
+	while (1) {
+		if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR)
 		{
-			hash_table[idx + j] = new_list;
+			if (curr->next)
+				new_list->next = curr->next;
+			*curr = *new_list;
+			free(new_list);
 			word_count++;
 			return;
 		}
-		curr = hash_table[idx + j];
-		while (curr->link)
-			curr = curr->link;
-		curr->link = new_list;
+		else if (ft_strcmp(curr->item.key, key) == 0)
+		{
+			new_list->link = curr->link;
+			curr->link = new_list;
+			/*while (curr->link)
+				curr = curr->link;
+			curr->link = new_list;*/
+			return;
+		}
+		else {
+			idx = hashoverride(key, ++depth);
+			curr = &hash_table[idx];
+			int j = 0;
+			for (; (curr->next) && (j < depth); j++) curr = curr->next; //만들어진 곳 끝까지 감
+			for (; j < depth; j++) { //새로 만듬
+				list_ptr nextspace = (list_ptr)malloc(sizeof(list));
+				nextspace->next = NULL;
+				curr->next = nextspace;
+				curr = curr->next;
+			}
+		}
 	}
 }
-
-//해시 함수(folding + division(TABLE_SIZE 로 나눈 나머지))
-/*int hash(char* key)
-{
-	return transform(key) % TABLE_SIZE;
-}*/
 
 unsigned long hash(char* str)
 {
@@ -121,17 +121,18 @@ unsigned long hash(char* str)
 	return hash % TABLE_SIZE;
 }
 
-/*int hash(char* str) {
-	int hash = 401;
+unsigned long hashoverride(char* str, int depth)
+{
+	unsigned long hash = 0;
 	int c;
 
-	while (*str) {
-		hash = ((hash << 4) + (int)(*str)) % TABLE_SIZE;
-		str++;
+	while (c = *str++) {
+		c += depth;
+		hash = c + (hash << 6) + (hash << 16) - hash;
 	}
 
 	return hash % TABLE_SIZE;
-}*/
+}
 
 // folding (key의 각 character 값을 더함)
 int transform(char* key)
@@ -144,44 +145,69 @@ int transform(char* key)
 
 void show_hash_table()
 {
-	list_ptr curr;
-	for (int i = 0; i < TABLE_SIZE; i++)
-	{
-		curr = hash_table[i];
-		if (curr)
-		{
+	list_ptr curr = &hash_table[0];
+	int depth = 0;
+	int i = -1, j = 0;
+	int count = 0;
+	do {
+		i = -1; count = 0;
+		printf("\n[[[ Depth : %d ]]]\n\n", depth);
+		while (i < TABLE_SIZE) {
+			if (depth == 2)
+				depth = 2;
+			curr = &hash_table[++i];
+
+			for (j = 0; j < depth; j++) {
+				curr = curr->next;
+				if (!curr) break;
+			}
+
+			if (j != depth) continue;
+			
+			if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
+
 			printf("hash %d : ", i);
 			while (curr)
 			{
+				count++;
 				printf("%s ", curr->item.key);
-				curr = curr->link;
+				curr = curr->link; //같을 때
 			}
 			printf("\n");
 		}
-	}
+		depth++;
+	} while (count != 0);
+	printf("\n==== END OF PRINT ====\n");
 }
 
 void search(char* word)
 {
-	int idx = hash(word);
+	int idx = hashoverride(word, 0);
 	int j = 0;
-	int comp = 0;
+	int curr_depth = 0;
+	comp_count = 0;
+	list_ptr curr = &hash_table[idx];
+	int is_it = 0;
 	printf("search word : %s\n\n", word);
-	if (!hash_table[idx])
-		return;
-	while (ft_strcmp(hash_table[idx + j]->item.key, word) != 0)
+	while (curr && ft_strcmp(curr->item.key, word) != 0)
 	{
-		comp++;
-		j++;
+		curr_depth++;
+		idx = hashoverride(word, curr_depth);
+		curr = &hash_table[idx];
+		for (int i = 0; curr && i < curr_depth; i++)
+			curr = curr->next;
 	}
-	list_ptr curr = hash_table[idx + j];
 	while (curr)
 	{
+		is_it = 1;
 		prt_word(curr->item);
 		printf("\n");
 		curr = curr->link;
 	}
-	printf("Total number of comparison : %d\n", comp);
+	if (is_it)
+		printf("Total number of comparison : %d\n", comp_count);
+	else
+		printf("%s is not exist in document\n", word);
 }
 
 void prt_word(element word)
@@ -212,17 +238,9 @@ void prt_index()
 	printf("Total number of comparison : %d\n", comp_count);
 }
 
-int test_count_word()
-{
-	int ret = 0;
-	for (int i = 0; i < TABLE_SIZE; i++)
-		if (hash_table[i])
-			ret++;
-	return ret;
-}
-
 int ft_strcmp(char* str1, char* str2)
 {
+	comp_count++;
 	strlwr(str1);
 	strlwr(str2);
 	return strcmp(str1, str2);
@@ -231,9 +249,9 @@ int ft_strcmp(char* str1, char* str2)
 int main()
 {
 	char filename[11];
-	for (int i = 1; i <= 4; i++)
+	for (int i = 1; i <= 10; i++)
 	{
-		sprintf(filename, "doc%03d.txt", i);
+		sprintf(filename, "doc%02d.txt", i);
 		read_file(filename);
 	}
 
@@ -242,7 +260,14 @@ int main()
 	//printf("test word : %d\n", test_count_word());
 	//printf("used hash : %d\n", hash("used"));
 	//printf("\n----------------------------\n");
-	search("computer");
+	char search_word[MAX_CHAR];
+	
+	while (1) {
+		printf("검색할 단어를 입력하세요 : ");
+		scanf("%s", search_word);
+		strlwr(search_word);
+		search(search_word);
+	}
 
 	//printf("%u", hash("computer"));
 }
