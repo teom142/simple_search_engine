@@ -74,10 +74,9 @@ void hash_insert(char* key, char* fname, int i)
 	new_list->link = NULL;
 	new_list->next = NULL;
 	int depth = 0;
-	list_ptr tmp = NULL;
 
 	while (1) {
-		if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR)
+		if (!ft_is_it(curr->item.key))//strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR)
 		{
 			if (curr->next)
 				new_list->next = curr->next;
@@ -108,6 +107,19 @@ void hash_insert(char* key, char* fname, int i)
 			}
 		}
 	}
+}
+
+int ft_is_it(char* str)
+{
+	if (!*str)
+		return 0;
+	while (*str)
+	{
+		if (!(*str >= 'a' && *str <= 'z'))
+			return 0;
+		str++;
+	}
+	return 1;
 }
 
 unsigned long hash(char* str)
@@ -164,7 +176,7 @@ void show_hash_table()
 
 			if (j != depth) continue;
 			
-			if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
+			if (!ft_is_it(curr->item.key)) continue; //strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
 
 			printf("hash %d : ", i);
 			while (curr)
@@ -257,9 +269,6 @@ int main()
 
 	show_hash_table();
 	prt_index();
-	//printf("test word : %d\n", test_count_word());
-	//printf("used hash : %d\n", hash("used"));
-	//printf("\n----------------------------\n");
 	char search_word[MAX_CHAR];
 	
 	while (1) {
@@ -268,6 +277,4 @@ int main()
 		strlwr(search_word);
 		search(search_word);
 	}
-
-	//printf("%u", hash("computer"));
 }

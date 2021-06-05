@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define MAX_CHAR 100
-#define TABLE_SIZE 65569
+#define TABLE_SIZE 200100
 #define DEPTH 10
 
 typedef struct {
@@ -21,14 +21,6 @@ typedef struct list {
 }	list;
 list hash_table[TABLE_SIZE];
 
-typedef struct head* head_ptr;
-typedef struct head {
-	list_ptr linked_head;
-	head_ptr next;
-} head;
-head_ptr mainp;
-
-
 int doc_count = 0;
 int word_count = 0;
 int comp_count = 0;
@@ -44,3 +36,4 @@ int is_alpha(char c);
 void ft_strchar(char* str, char c);
 int ft_strcmp(char* str1, char* str2);
 int	ft_is_space(char c);
+int ft_is_it(char* str);
