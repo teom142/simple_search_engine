@@ -1,3 +1,4 @@
+/*simple_search_engine.c*/
 #pragma warning(disable:4996)
 #include "simple_search_engine.h"
 
@@ -14,7 +15,6 @@ int read_file(int fnum)
 	sprintf(fname, "doc%03d.txt", fnum);
 
 	if ((ifp = fopen(fname, "r")) == NULL) {
-		//printf("No such file !\n");
 		return;
 	}
 	doc_count++;
@@ -50,10 +50,10 @@ void hash_insert(char* key, int fnum, int i)
 	list_ptr tmp = NULL;
 
 	while (1) {
-		if (!ft_is_it(curr->item.key)) //strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR)
+		if (!ft_is_it(curr->item.key))			//curr노드가 비어있을 경우 혹은 더미노드일 경우
 		{
-			if (curr->next)
-				new_list->next = curr->next;
+			if (curr->next)						//기존 next연결이 있을 경우
+				new_list->next = curr->next;	//그 연결을 이어서 받아옴
 			*curr = *new_list;
 			free(new_list);
 			word_count++;
@@ -81,44 +81,29 @@ void hash_insert(char* key, int fnum, int i)
 	}
 }
 
-int is_alpha(char c)
+void quick_sort(dinfo list[], int left, int right)
 {
-	if (c >= 'a' && c <= 'z')
-		return 1;
-	if (c >= 'A' && c <= 'Z')
-		return 1;
-	return 0;
-}
+	int i = left, j = right + 1;
+	dinfo temp;
+	if (left < right) {
 
-int	ft_is_space(char c)
-{
-	if (c == ' ')
-		return (1);
-	if (c == '\t')
-		return (1);
-	if (c == '\n')
-		return (1);
-	if (c == '\r' || c == '\f' || c == '\v')
-		return (1);
-	return (0);
-}
+		dinfo pivot = list[left];
+		while (i < j) {
+			while (list[++i].appearance > pivot.appearance);
+			while (list[--j].appearance < pivot.appearance);
+			if (i < j) {
+				temp = list[i];
+				list[i] = list[j];
+				list[j] = temp;
+			}
+		}
+		temp = list[j];
+		list[j] = list[left];
+		list[left] = temp;
 
-void ft_strchar(char* str, char c)
-{
-	char* p = str;
-	while (*p)
-		p++;
-	*p = c;
-	*(p + 1) = 0;
-}
-
-int ft_is_it(char* str)
-{
-	if (!*str)
-		return 0;
-	if (!(*str >= 'a' && *str <= 'z'))
-		return 0;
-	return 1;
+		quick_sort(list, left, j - 1);
+		quick_sort(list, j + 1, right);
+	}
 }
 
 unsigned long hash(char* str, int depth)
@@ -142,7 +127,6 @@ void show_hash_table()
 	int count = 0;
 	do {
 		i = -1; count = 0;
-		//printf("\n[[[ Depth : %d ]]]\n\n", depth);
 		while (i < TABLE_SIZE) {
 			if (depth == 2)
 				depth = 2;
@@ -157,12 +141,10 @@ void show_hash_table()
 
 			if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
 
-			//printf("hash %d : ", i);
 			if (curr) show_search(curr->item.key);
 			while (curr)
 			{
 				count++;
-				//printf("%s ", curr->item.key);
 				curr = curr->link; //같을 때
 			}
 		}
@@ -281,7 +263,7 @@ void prt_word(element word)
 	char key[MAX_CHAR];
 	FILE* ifp;
 	char fname[200];
-	
+
 	sprintf(fname, "doc%03d.txt", word.doc);
 	if ((ifp = fopen(fname, "r")) == NULL) {
 		printf("No such file !\n");
@@ -303,39 +285,6 @@ void prt_index()
 	printf("Total number of documents : %d\n", doc_count);
 	printf("Total number of indexed words: %d\n", word_count);
 	printf("Total number of comparison : %d\n", comparison);
-}
-
-int ft_strcmp(char* str1, char* str2)
-{
-	comp_count++;
-	strlwr(str1);
-	strlwr(str2);
-	return strcmp(str1, str2);
-}
-
-void quick_sort(dinfo list[], int left, int right)
-{
-	int i = left, j = right + 1;
-	dinfo temp;
-	if (left < right) {
-
-		dinfo pivot = list[left];
-		while (i < j) {
-			while (list[++i].appearance > pivot.appearance) {}
-			while (list[--j].appearance < pivot.appearance) {}
-			if (i < j) {
-				temp = list[i];
-				list[i] = list[j];
-				list[j] = temp;
-			}
-		}
-		temp = list[j];
-		list[j] = list[left];
-		list[left] = temp;
-
-		quick_sort(list, left, j - 1);
-		quick_sort(list, j + 1, right);
-	}
 }
 
 void free_all()
@@ -365,8 +314,56 @@ void free_util(list_ptr curr)
 		free_util(curr->next);
 	if (curr->link)
 		free_util(curr->link);
-	
+
 	free(curr);
+}
+
+int is_alpha(char c)
+{
+	if (c >= 'a' && c <= 'z')
+		return 1;
+	if (c >= 'A' && c <= 'Z')
+		return 1;
+	return 0;
+}
+
+int	ft_is_space(char c)
+{
+	if (c == ' ')
+		return (1);
+	if (c == '\t')
+		return (1);
+	if (c == '\n')
+		return (1);
+	if (c == '\r' || c == '\f' || c == '\v')
+		return (1);
+	return (0);
+}
+
+void ft_strchar(char* str, char c)
+{
+	char* p = str;
+	while (*p)
+		p++;
+	*p = c;
+	*(p + 1) = 0;
+}
+
+int ft_is_it(char* str)
+{
+	if (!*str)
+		return 0;
+	if (!(*str >= 'a' && *str <= 'z'))
+		return 0;
+	return 1;
+}
+
+int ft_strcmp(char* str1, char* str2)
+{
+	comp_count++;
+	strlwr(str1);
+	strlwr(str2);
+	return strcmp(str1, str2);
 }
 
 int main()

@@ -1,23 +1,24 @@
+/*simple_search_engine.h*/
 #pragma once
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAX_CHAR 100
-#define TABLE_SIZE 200100
-#define MAX_DOC 100
+#define MAX_CHAR 100				//최대 단어 길이
+#define TABLE_SIZE 200100			//해쉬 테이블 사이즈
+#define MAX_DOC 100					//최대 문서의 수
 
 typedef struct {
 	char key[MAX_CHAR];
-	int doc; // 몇 번째 document
-	int word_idx; // 몇 번째 
+	int doc;						//단어가 위치한 문서의 index
+	int word_idx;					//해당 문서에서 단어의 위치
 } element;
 
 typedef struct list* list_ptr;
 typedef struct list {
 	element item;
-	list_ptr link; //같은 거
-	list_ptr next; //다음번 거
+	list_ptr link;					//같은 거
+	list_ptr next;					//다음번 거
 }	list;
 list hash_table[TABLE_SIZE];
 
