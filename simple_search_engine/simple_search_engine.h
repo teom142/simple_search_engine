@@ -30,10 +30,12 @@ int doc_count = 0;
 int word_count = 0;
 int comp_count = 0;
 int total_comp = 0;
+int comparison;
 
 int read_file(int fnum);
 void hash_insert(char* key, int fnum, int word_idx);
-unsigned long hash(char* str);
+unsigned long hash(char* str, int depth);
+void show_search(char* word);
 int transform(char* key);
 void show_hash_table();
 void prt_word(element word);

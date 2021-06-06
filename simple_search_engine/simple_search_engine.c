@@ -14,8 +14,8 @@ int read_file(int fnum)
 	sprintf(fname, "doc%03d.txt", fnum);
 
 	if ((ifp = fopen(fname, "r")) == NULL) {
-		printf("No such file !\n");
-		exit(1);
+		//printf("No such file !\n");
+		return;
 	}
 	doc_count++;
 	while (fscanf(ifp, "%c", &c) == 1) {// (key data)를 읽어 해시테이블에 삽입
@@ -35,37 +35,6 @@ int read_file(int fnum)
 	return(i);
 }
 
-int	ft_is_space(char c)
-{
-	if (c == ' ')
-		return (1);
-	if (c == '\t')
-		return (1);
-	if (c == '\n')
-		return (1);
-	if (c == '\r' || c == '\f' || c == '\v')
-		return (1);
-	return (0);
-}
-
-void ft_strchar(char* str, char c)
-{
-	char* p = str;
-	while (*p)
-		p++;
-	*p = c;
-	*(p + 1) = 0;
-}
-
-int is_alpha(char c)
-{
-	if (c >= 'a' && c <= 'z')
-		return 1;
-	if (c >= 'A' && c <= 'Z')
-		return 1;
-	return 0;
-}
-
 void hash_insert(char* key, int fnum, int i)
 {
 	int comp = 0;
@@ -81,7 +50,7 @@ void hash_insert(char* key, int fnum, int i)
 	list_ptr tmp = NULL;
 
 	while (1) {
-		if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR)
+		if (!ft_is_it(curr->item.key)) //strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR)
 		{
 			if (curr->next)
 				new_list->next = curr->next;
@@ -112,6 +81,37 @@ void hash_insert(char* key, int fnum, int i)
 	}
 }
 
+int is_alpha(char c)
+{
+	if (c >= 'a' && c <= 'z')
+		return 1;
+	if (c >= 'A' && c <= 'Z')
+		return 1;
+	return 0;
+}
+
+int	ft_is_space(char c)
+{
+	if (c == ' ')
+		return (1);
+	if (c == '\t')
+		return (1);
+	if (c == '\n')
+		return (1);
+	if (c == '\r' || c == '\f' || c == '\v')
+		return (1);
+	return (0);
+}
+
+void ft_strchar(char* str, char c)
+{
+	char* p = str;
+	while (*p)
+		p++;
+	*p = c;
+	*(p + 1) = 0;
+}
+
 int ft_is_it(char* str)
 {
 	if (!*str)
@@ -134,15 +134,6 @@ unsigned long hash(char* str, int depth)
 	return hash % TABLE_SIZE;
 }
 
-// folding (key의 각 character 값을 더함)
-int transform(char* key)
-{
-	int num = 0;
-	while (*key)
-		num += *key++;
-	return num;
-}
-
 void show_hash_table()
 {
 	list_ptr curr = &hash_table[0];
@@ -151,7 +142,7 @@ void show_hash_table()
 	int count = 0;
 	do {
 		i = -1; count = 0;
-		printf("\n[[[ Depth : %d ]]]\n\n", depth);
+		//printf("\n[[[ Depth : %d ]]]\n\n", depth);
 		while (i < TABLE_SIZE) {
 			if (depth == 2)
 				depth = 2;
@@ -167,19 +158,63 @@ void show_hash_table()
 			if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
 
 			//printf("hash %d : ", i);
-			if (curr) search(curr->item.key);
+			if (curr) show_search(curr->item.key);
 			while (curr)
 			{
 				count++;
 				//printf("%s ", curr->item.key);
 				curr = curr->link; //같을 때
 			}
-			printf("\n");
 		}
 		depth++;
 	} while (count != 0);
 	printf("\n==== END OF PRINT ====\n");
 	printf("Search Comparison Average : %.4f\n\n", (double)total_comp / (double)word_count);
+}
+
+void show_search(char* word)
+{
+	int idx = hash(word, 0);
+	int j = 0;
+	int curr_depth = 0;
+	comp_count = 0;
+	list_ptr curr = &hash_table[idx];
+	int prt_file = 1;
+
+	int is_it = 0;
+
+	dinfo doc_transition[MAX_DOC + 1] = { 0 };
+
+	while (curr && ft_strcmp(curr->item.key, word) != 0)
+	{
+		curr_depth++;
+		idx = hash(word, curr_depth);
+		curr = &hash_table[idx];
+		for (int i = 0; curr && i < curr_depth; i++)
+			curr = curr->next;
+	}
+
+	list_ptr tmp = curr;
+
+	for (tmp = curr; tmp; tmp = tmp->link) {
+		doc_transition[tmp->item.doc].appearance++;
+		doc_transition[tmp->item.doc].doc = tmp->item.doc;
+	}
+	quick_sort(doc_transition, 1, MAX_DOC);
+	for (int i = 1; doc_transition[i].appearance >= 0; i++) {
+		if (doc_transition[i].appearance == 0) continue;
+		tmp = curr;
+		prt_file = 1;
+		char fname[11] = "";
+		while (tmp)
+		{
+			is_it = 1;
+			if (tmp->item.doc == doc_transition[i].doc) {
+			}
+			tmp = tmp->link;
+		}
+	}
+	total_comp += comp_count;
 }
 
 void search(char* word)
@@ -245,12 +280,12 @@ void prt_word(element word)
 	int i = 0;
 	char key[MAX_CHAR];
 	FILE* ifp;
-	char fname[11];
+	char fname[200];
 	
 	sprintf(fname, "doc%03d.txt", word.doc);
 	if ((ifp = fopen(fname, "r")) == NULL) {
 		printf("No such file !\n");
-		exit(1);
+		return;
 	}
 	while (fscanf(ifp, "%s", key) == 1) {
 		if (word.word_idx - i == 4 || word.word_idx - i == -4)
@@ -267,7 +302,7 @@ void prt_index()
 {
 	printf("Total number of documents : %d\n", doc_count);
 	printf("Total number of indexed words: %d\n", word_count);
-	printf("Total number of comparison : %d\n", comp_count);
+	printf("Total number of comparison : %d\n", comparison);
 }
 
 int ft_strcmp(char* str1, char* str2)
@@ -319,19 +354,26 @@ void free_util(list_ptr curr)
 {
 	if (!curr)
 		return;
-	if (curr->link)
-		free_util(curr->link);
+	if (!ft_is_it(curr->item.key))		//더미 노드일 경우
+	{
+		if (curr->next)					//더미 노드의 next가 있을 경우
+			free_util(curr->next);
+		free(curr);
+		return;
+	}
 	if (curr->next)
 		free_util(curr->next);
+	if (curr->link)
+		free_util(curr->link);
+	
 	free(curr);
 }
 
 int main()
 {
-	char filename[11];
-	for (int i = 1; i <= 10; i++) read_file(i);
-
-	//show_hash_table();
+	for (int i = 1; i <= MAX_DOC; i++) read_file(i);
+	comparison = comp_count;
+	show_hash_table();
 	prt_index();
 	char search_word[MAX_CHAR] = "";
 
