@@ -157,13 +157,10 @@ void show_hash_table()
 void show_search(char* word)
 {
 	int idx = hash(word, 0);
-	int j = 0;
 	int curr_depth = 0;
 	comp_count = 0;
 	list_ptr curr = &hash_table[idx];
 	int prt_file = 1;
-
-	int is_it = 0;
 
 	dinfo doc_transition[MAX_DOC + 1] = { 0 };
 
@@ -190,7 +187,6 @@ void show_search(char* word)
 		char fname[11] = "";
 		while (tmp)
 		{
-			is_it = 1;
 			if (tmp->item.doc == doc_transition[i].doc) {
 			}
 			tmp = tmp->link;
@@ -202,7 +198,6 @@ void show_search(char* word)
 void search(char* word)
 {
 	int idx = hash(word, 0);
-	int j = 0;
 	int curr_depth = 0;
 	comp_count = 0;
 	list_ptr curr = &hash_table[idx];
