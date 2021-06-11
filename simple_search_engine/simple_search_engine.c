@@ -37,7 +37,6 @@ int read_file(int fnum)
 
 void hash_insert(char* key, int fnum, int i)
 {
-	int comp = 0;
 	list_ptr new_list = (list_ptr)malloc(sizeof(list));
 	int idx = hash(key, 0);
 	list_ptr curr = &hash_table[idx];
@@ -139,7 +138,7 @@ void show_hash_table()
 
 			if (j != depth) continue;
 
-			if (strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
+			if (!ft_is_it(curr->item.key)) continue; // strlen(curr->item.key) == 0 || strlen(curr->item.key) > MAX_CHAR) continue;
 
 			if (curr) show_search(curr->item.key);
 			while (curr)
