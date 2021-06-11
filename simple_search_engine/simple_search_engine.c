@@ -19,7 +19,7 @@ int read_file(int fnum)
 	}
 	doc_count++;
 	while (fscanf(ifp, "%c", &c) == 1) {	//(key data)를 읽어 해시테이블에 삽입
-		c = tolower(c);						//c를 하나씩 소문자로 바꾼다
+		c = ft_tolower(c);						//c를 하나씩 소문자로 바꾼다
 		if (is_alpha(c))
 			ft_strchar(key, c);				//c가 알파벳일 경우 key에 저장한다.
 		else if (ft_is_space(c) && key[0])	//key에 무언가가 저장되었고, 공백문자 즉 단어를 나누는 문자가 나오면
@@ -362,6 +362,13 @@ int ft_strcmp(char* str1, char* str2)	//strcmp의 응용함수
 	strlwr(str1);						//두 문자열을 모두 소문자로 변환
 	strlwr(str2);
 	return strcmp(str1, str2);			//최종적으로 strcmp값 반환
+}
+
+char ft_tolower(char c)
+{
+	if (c >= 'A' && c <= 'Z')
+		c += 'a' - 'A';
+	return c;
 }
 
 int main()

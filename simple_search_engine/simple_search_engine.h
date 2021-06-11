@@ -47,6 +47,7 @@ void quick_sort(dinfo list[], int left, int right);
 void free_util(list_ptr curr);
 void free_all();
 
+char ft_tolower(char c);
 int is_alpha(char c);
 void ft_strchar(char* str, char c);
 int ft_strcmp(char* str1, char* str2);
