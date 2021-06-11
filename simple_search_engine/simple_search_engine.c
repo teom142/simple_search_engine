@@ -8,7 +8,7 @@ int read_file(int fnum)
 	char key[MAX_CHAR];
 	key[0] = 0;
 	char c;
-	int prev_c = 1;
+	int prev_c = 0;
 	FILE* ifp;
 
 	char fname[11];
@@ -215,6 +215,7 @@ void search(char* word)
 		for (int i = 0; curr && i < curr_depth; i++)
 			curr = curr->next;
 	}
+
 	if (!curr)	//curr이 null에 도달했다는 뜻은 search하는 단어가 없는 단어라는 뜻
 	{
 		printf("%s is not exist in document\n", word);
@@ -253,7 +254,7 @@ void search(char* word)
 void prt_word(element word)
 {
 	int i = 0;
-	char key[MAX_CHAR];
+	char key[MAX_CHAR] = "";
 	FILE* ifp;
 	char fname[200];
 
@@ -271,7 +272,7 @@ void prt_word(element word)
 				printf("\x1b[91m" "%s " "\x1b[0m", key);			//해당 단어 출력 색 수정
 			else
 				printf("%s ", key);
-		}
+		}		
 		i++;
 	}
 	printf("\n");
