@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define MAX_CHAR 100				//최대 단어 길이
-#define TABLE_SIZE 200100			//해쉬 테이블 사이즈
+#define TABLE_SIZE 65535			//해쉬 테이블 사이즈
 #define MAX_DOC 100					//최대 문서의 수
 
 typedef struct {
